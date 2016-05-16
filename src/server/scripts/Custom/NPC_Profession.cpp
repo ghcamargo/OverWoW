@@ -2,6 +2,9 @@
 #include "Language.h"
 #include "Player.h"
 #include "Creature.h"
+#include "WorldSession.h"
+#include "ScriptedGossip.h"
+#include "Define.h"
 
 #define TOKEN_PVP 20558
 #define QTD_TOKEN 100
@@ -10,12 +13,6 @@ class Professions_NPC : public CreatureScript
 {
 public:
 	Professions_NPC() : CreatureScript("Professions_NPC") {}
-
-	void CreatureWhisperBasedOnBool(const char *text, Creature *_creature, Player *pPlayer, bool value)
-	{
-		if (value)
-			_creature->Whisper(text, LANG_UNIVERSAL, NULL);
-	}
 
 	uint32 PlayerMaxLevel() const
 	{
@@ -134,12 +131,12 @@ public:
 	void CompleteLearnProfession(Player *pPlayer, Creature *pCreature, SkillType skill)
 	{
 		if (PlayerAlreadyHasTwoProfessions(pPlayer) && !IsSecondarySkill(skill)){
-			pCreature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+			pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
 		}
 		else
 		{
 			if (!LearnAllRecipesInProfession(pPlayer, skill))
-				pCreature->Whisper("Um erro aconteceu!", LANG_UNIVERSAL, NULL);
+				pPlayer->GetSession()->SendNotification("|cffFFFFFFUm erro ocorreu! Contate um Game Master.");
 		}
 	}
 
@@ -172,12 +169,12 @@ public:
 			case 1:
 				if (pPlayer->HasSkill(SKILL_ALCHEMY))
 				{
-					_creature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+					pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ALREADY_KNOWN);
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}else
 				{
-					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false) && !PlayerAlreadyHasTwoProfessions(pPlayer))
 					{
 						CompleteLearnProfession(pPlayer, _creature, SKILL_ALCHEMY);
 						pPlayer->UpdateSkill(SKILL_ALCHEMY, 450);
@@ -185,21 +182,27 @@ public:
 						pPlayer->PlayerTalkClass->SendCloseGossip();
 					}
 					else
-					{
-						pPlayer->PlayerTalkClass->SendCloseGossip();					
-						_creature->Whisper("Você não tem o número de Token PvP (100) suficiente para treinar essa profissão.", LANG_UNIVERSAL, NULL);
-					}
+						if (!pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();					
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_NOT_ENOUGH_PVPTOKEN);
+						}
+						else
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
+						}
 				}break;
 			case 2:
 				if (pPlayer->HasSkill(SKILL_BLACKSMITHING))
 				{
-					_creature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+					pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ALREADY_KNOWN);
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}
 				else
 				{
-					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false) && !PlayerAlreadyHasTwoProfessions(pPlayer))
 					{
 						CompleteLearnProfession(pPlayer, _creature, SKILL_BLACKSMITHING);
 						pPlayer->UpdateSkill(SKILL_BLACKSMITHING, 450);
@@ -207,21 +210,27 @@ public:
 						pPlayer->PlayerTalkClass->SendCloseGossip();
 					}
 					else
-					{
-						pPlayer->PlayerTalkClass->SendCloseGossip();
-						_creature->Whisper("Você não tem o número de Token PvP (100) suficiente para treinar essa profissão.", LANG_UNIVERSAL, NULL);
-					}
+						if (!pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_NOT_ENOUGH_PVPTOKEN);
+						}
+						else
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
+						}
 				}break;
 			case 3:
 				if (pPlayer->HasSkill(SKILL_LEATHERWORKING))
 				{
-					_creature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+					pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ALREADY_KNOWN);
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}
 				else
 				{
-					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false) && !PlayerAlreadyHasTwoProfessions(pPlayer))
 					{
 						CompleteLearnProfession(pPlayer, _creature, SKILL_LEATHERWORKING);
 						pPlayer->UpdateSkill(SKILL_LEATHERWORKING, 450);
@@ -229,21 +238,27 @@ public:
 						pPlayer->PlayerTalkClass->SendCloseGossip();
 					}
 					else
-					{
-						pPlayer->PlayerTalkClass->SendCloseGossip();
-						_creature->Whisper("Você não tem o número de Token PvP (100) suficiente para treinar essa profissão.", LANG_UNIVERSAL, NULL);
-					}
+						if (!pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_NOT_ENOUGH_PVPTOKEN);
+						}
+						else
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
+						}
 				}break;
 			case 4:
 				if (pPlayer->HasSkill(SKILL_TAILORING))
 				{
-					_creature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+					pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ALREADY_KNOWN);
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}
 				else
 				{
-					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false) && !PlayerAlreadyHasTwoProfessions(pPlayer))
 					{
 						CompleteLearnProfession(pPlayer, _creature, SKILL_TAILORING);
 						pPlayer->UpdateSkill(SKILL_TAILORING, 450);
@@ -251,21 +266,27 @@ public:
 						pPlayer->PlayerTalkClass->SendCloseGossip();
 					}
 					else
-					{
-						pPlayer->PlayerTalkClass->SendCloseGossip();
-						_creature->Whisper("Você não tem o número de Token PvP (100) suficiente para treinar essa profissão.", LANG_UNIVERSAL, NULL);
-					}
+						if (!pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_NOT_ENOUGH_PVPTOKEN);
+						}
+						else
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
+						}
 				}break;
 			case 5:
 				if (pPlayer->HasSkill(SKILL_ENGINEERING))
 				{
-					_creature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+					pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ALREADY_KNOWN);
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}
 				else
 				{
-					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false) && !PlayerAlreadyHasTwoProfessions(pPlayer))
 					{
 						CompleteLearnProfession(pPlayer, _creature, SKILL_ENGINEERING);
 						pPlayer->UpdateSkill(SKILL_ENGINEERING, 450);
@@ -273,22 +294,28 @@ public:
 						pPlayer->PlayerTalkClass->SendCloseGossip();
 					}
 					else
-					{
-						pPlayer->PlayerTalkClass->SendCloseGossip();
-						_creature->Whisper("Você não tem o número de Token PvP (100) suficiente para treinar essa profissão.", LANG_UNIVERSAL, NULL);
-					}
+						if (!pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_NOT_ENOUGH_PVPTOKEN);
+						}
+						else
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
+						}
 				}break;
 
 			case 6:
 				if (pPlayer->HasSkill(SKILL_ENCHANTING))
 				{
-					_creature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+					pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ALREADY_KNOWN);
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}
 				else
 				{
-					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false) && !PlayerAlreadyHasTwoProfessions(pPlayer))
 					{
 						CompleteLearnProfession(pPlayer, _creature, SKILL_ENCHANTING);
 						pPlayer->UpdateSkill(SKILL_ENCHANTING, 450);
@@ -296,21 +323,27 @@ public:
 						pPlayer->PlayerTalkClass->SendCloseGossip();
 					}
 					else
-					{
-						pPlayer->PlayerTalkClass->SendCloseGossip();
-						_creature->Whisper("Você não tem o número de Token PvP (100) suficiente para treinar essa profissão.", LANG_UNIVERSAL, NULL);
-					}
+						if (!pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_NOT_ENOUGH_PVPTOKEN);
+						}
+						else
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
+						}
 				}break;
 			case 7:
 				if (pPlayer->HasSkill(SKILL_JEWELCRAFTING))
 				{
-					_creature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+					pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ALREADY_KNOWN);
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}
 				else
 				{
-					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false) && !PlayerAlreadyHasTwoProfessions(pPlayer))
 					{
 						CompleteLearnProfession(pPlayer, _creature, SKILL_JEWELCRAFTING);
 						pPlayer->UpdateSkill(SKILL_JEWELCRAFTING, 450);
@@ -318,21 +351,27 @@ public:
 						pPlayer->PlayerTalkClass->SendCloseGossip();
 					}
 					else
-					{
-						pPlayer->PlayerTalkClass->SendCloseGossip();
-						_creature->Whisper("Você não tem o número de Token PvP (100) suficiente para treinar essa profissão.", LANG_UNIVERSAL, NULL);
-					}
+						if (!pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_NOT_ENOUGH_PVPTOKEN);
+						}
+						else
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
+						}
 				}break;
 			case 8:
 				if (pPlayer->HasSkill(SKILL_INSCRIPTION))
 				{
-					_creature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+					pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ALREADY_KNOWN);
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}
 				else
 				{
-					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false) && !PlayerAlreadyHasTwoProfessions(pPlayer))
 					{
 						CompleteLearnProfession(pPlayer, _creature, SKILL_INSCRIPTION);
 						pPlayer->UpdateSkill(SKILL_INSCRIPTION, 450);
@@ -340,15 +379,21 @@ public:
 						pPlayer->PlayerTalkClass->SendCloseGossip();
 					}
 					else
-					{
-						pPlayer->PlayerTalkClass->SendCloseGossip();
-						_creature->Whisper("Você não tem o número de Token PvP (100) suficiente para treinar essa profissão.", LANG_UNIVERSAL, NULL);
-					}
+						if (!pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_NOT_ENOUGH_PVPTOKEN);
+						}
+						else
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
+						}
 				}break;
 			case 9:
 				if (pPlayer->HasSkill(SKILL_COOKING))
 				{
-					_creature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+					pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ALREADY_KNOWN);
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}
@@ -362,15 +407,21 @@ public:
 						pPlayer->PlayerTalkClass->SendCloseGossip();
 					}
 					else
-					{
-						pPlayer->PlayerTalkClass->SendCloseGossip();
-						_creature->Whisper("Você não tem o número de Token PvP (100) suficiente para treinar essa profissão.", LANG_UNIVERSAL, NULL);
-					}
+						if (!pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_NOT_ENOUGH_PVPTOKEN);
+						}
+						else
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
+						}
 				}break;
 			case 10:
 				if (pPlayer->HasSkill(SKILL_FIRST_AID))
 				{
-					_creature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+					pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ALREADY_KNOWN);
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}
@@ -384,21 +435,27 @@ public:
 						pPlayer->PlayerTalkClass->SendCloseGossip();
 					}
 					else
-					{
-						pPlayer->PlayerTalkClass->SendCloseGossip();
-						_creature->Whisper("Você não tem o número de Token PvP (100) suficiente para treinar essa profissão.", LANG_UNIVERSAL, NULL);
-					}
+						if (!pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_NOT_ENOUGH_PVPTOKEN);
+						}
+						else
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
+						}
 				}break;
 			case 11:
 				if (pPlayer->HasSkill(SKILL_HERBALISM))
 				{
-					_creature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+					pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ALREADY_KNOWN);
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}
 				else
 				{
-					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false) && !PlayerAlreadyHasTwoProfessions(pPlayer))
 					{
 						CompleteLearnProfession(pPlayer, _creature, SKILL_HERBALISM);
 						pPlayer->UpdateSkill(SKILL_HERBALISM, 450);
@@ -406,21 +463,27 @@ public:
 						pPlayer->PlayerTalkClass->SendCloseGossip();
 					}
 					else
-					{
-						pPlayer->PlayerTalkClass->SendCloseGossip();
-						_creature->Whisper("Você não tem o número de Token PvP (100) suficiente para treinar essa profissão.", LANG_UNIVERSAL, NULL);
-					}
+						if (!pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_NOT_ENOUGH_PVPTOKEN);
+						}
+						else
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
+						}
 				}break;
 			case 12:
 				if (pPlayer->HasSkill(SKILL_SKINNING))
 				{
-					_creature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+					pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ALREADY_KNOWN);
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}
 				else
 				{
-					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false) && !PlayerAlreadyHasTwoProfessions(pPlayer))
 					{
 						CompleteLearnProfession(pPlayer, _creature, SKILL_SKINNING);
 						pPlayer->UpdateSkill(SKILL_SKINNING, 450);
@@ -428,21 +491,27 @@ public:
 						pPlayer->PlayerTalkClass->SendCloseGossip();
 					}
 					else
-					{
-						pPlayer->PlayerTalkClass->SendCloseGossip();
-						_creature->Whisper("Você não tem o número de Token PvP (100) suficiente para treinar essa profissão.", LANG_UNIVERSAL, NULL);
-					}
+						if (!pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_NOT_ENOUGH_PVPTOKEN);
+						}
+						else
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
+						}
 				}break;
 			case 13:
 				if (pPlayer->HasSkill(SKILL_MINING))
 				{
-					_creature->Whisper("Você já aprendeu essa profissão.", LANG_UNIVERSAL, NULL);
+					pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ALREADY_KNOWN);
 					pPlayer->PlayerTalkClass->SendCloseGossip();
 					break;
 				}
 				else
 				{
-					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+					if (pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false) && !PlayerAlreadyHasTwoProfessions(pPlayer))
 					{
 						CompleteLearnProfession(pPlayer, _creature, SKILL_MINING);
 						pPlayer->UpdateSkill(SKILL_MINING, 450);
@@ -450,10 +519,16 @@ public:
 						pPlayer->PlayerTalkClass->SendCloseGossip();
 					}
 					else
-					{
-						pPlayer->PlayerTalkClass->SendCloseGossip();
-						_creature->Whisper("Você não tem o número de Token PvP (100) suficiente para treinar essa profissão.", LANG_UNIVERSAL, NULL);
-					}
+						if (!pPlayer->HasItemCount(TOKEN_PVP, QTD_TOKEN, false))
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_NOT_ENOUGH_PVPTOKEN);
+						}
+						else
+						{
+							pPlayer->PlayerTalkClass->SendCloseGossip();
+							pPlayer->GetSession()->SendNotification(LANG_NPCPROFESSION_ERRO_TWOPROFESSION);
+						}
 				}break;
 			}
 		}
